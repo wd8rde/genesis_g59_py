@@ -130,21 +130,9 @@ class g59_cmd:
             arry.append(ord(c))
         return arry
 
-    def att_on(self):
-        self.__send_cmd("ATT_ON",None)
-        return
-
-    def att_off(self):
-        self.__send_cmd("ATT_OFF",None)
-        return
-
-    def set_name(self, name):
-        return
-
-    def set_freq(self, freq):
+    def __send_freq_cmd(self,cmd,freq):
         si570 = Si570Utils(verbose=4)
         registers = si570.setFreq(freq)
-        cmd = 'SET_FREQ'
         cmd_array = self.__str2array(cmd)
         cmd_packet = self.__pack_cmd(cmd_array)
 
@@ -170,8 +158,25 @@ class g59_cmd:
         param[17] = registers[5] #0xe0
 
         packet = self.__pack_request(cmd_packet, param)
-        print dump(packet)
         self.ep_out.write(packet)
+
+    def att_on(self):
+        self.__send_cmd("ATT_ON",None)
+        return
+
+    def att_off(self):
+        self.__send_cmd("ATT_OFF",None)
+        return
+
+    def set_name(self, name):
+        return
+
+    def set_freq(self, freq):
+        self.__send_freq_cmd('SET_FREQ', freq)
+        return
+
+    def smooth(self, freq):
+        self.__send_freq_cmd('SMOOTH', freq)
         return
 
     def set_filt(self,fltr):
@@ -180,9 +185,6 @@ class g59_cmd:
             param.append(0x00)
         param[12] = fltr
         self.__send_cmd("SET_FILT", param)
-        return
-
-    def k_speed(self):
         return
 
     def af_on(self):
@@ -225,22 +227,72 @@ class g59_cmd:
         self.__send_cmd("TX_OFF",None)
         return
 
-    def k_mode(self):
+    def k_speed(self,wpm):
+        divisor = int(520/wpm)
+        param = []
+        for i in range(56):
+            param.append(0x00)
+
+        param[12] = divisor
+        self.__send_cmd("K_SPEED", param)
         return
 
-    def k_ratio(self):
+    def k_mode(self,mode):
+        param = []
+        for i in range(56):
+            param.append(0x00)
+
+        param[12] = int(mode)
+        self.__send_cmd("K_SPEED", param)
         return
 
-    def pa10_on(self):
+    def k_ratio(self,ratio):
+        param = []
+        for i in range(56):
+            param.append(0x00)
+
+        param[12] = int(ratio)
+        self.__send_cmd("K_SPEED", param)
+        return
+
+    def pa10_on(self,on_off):
+        param = []
+        for i in range(56):
+            param.append(0x00)
+
+        if on_off:
+            param[12] = 0x01
+
+        self.__send_cmd("PA10_ON", param)
+        return
+
+    def line_mic(self,on_off):
+        param = []
+        for i in range(56):
+            param.append(0x00)
+
+        if on_off:
+            param[12] = 0x01
+
+        self.__send_cmd("LINE/MIC", param)
         return
 
     def auto_cor(self):
         return
 
-    def sec_rx2(self):
+    def sec_rx2(self, on_off):
+        param = []
+        for i in range(56):
+            param.append(0x00)
+
+        if on_off:
+            param[12] = 0x01
+
+        self.__send_cmd("SEC_RX2", param)
         return
 
     def monitor(self):
+        self.__send_cmd("MONITOR",None)
         return
 
 
